@@ -22,7 +22,17 @@ def get_list_relation(obj_some):
         children = obj_some.children.parent_set.get().child.all()
         common_people.extend(parent_child)
         common_people.extend(children)
+
+    clear_self(common_people, obj_some)
+
+
     return common_people
+
+
+def clear_self(common_people, obj_some):
+    for i in range(len(common_people)):
+        if str(common_people[i]) == str(obj_some):
+            common_people.pop(i)
 
 
 class Check():

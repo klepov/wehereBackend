@@ -1,22 +1,21 @@
-import json
-
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from idna import unicode
 from rest_framework import permissions
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.api.serializers import SnippetSerializerParent
 from core.models import Parent, Children
 
 
-class Reg_api(APIView, permissions.BasePermission):
+class RegApi(APIView, permissions.BasePermission):
+
     def post(self, request):
 
+        """
+        метод регистрирует нового участника
+        :rtype: ответ на запрос
+        """
         data = {}
         try:
             login = request.data['username']
@@ -33,7 +32,7 @@ class Reg_api(APIView, permissions.BasePermission):
 
                     p.save()
 
-                    token = Token.objects.create(user = user)
+                    token = Token.objects.create(user=user)
 
                     data['token'] = str(token)
 
@@ -51,49 +50,57 @@ class Reg_api(APIView, permissions.BasePermission):
         return Response(data)
 
 
-
-
-class Add_child_api(APIView):
-
+class AddChildApi(APIView):
     def post(self, request):
 
-
+        """
+        метод создает и прикрепляет ребенка к родителю
+        :rtype: ответ на запрос
+        """
         data = {}
         if request.user.is_anonymous():
 
             data["status"] = "error"
-            data["data"] = {"code": 3}
+            data["data"] = {"code": 6}
 
         else:
-            parent_user = request.user
-            login = request.data['name_child']
-            if not User.objects.filter(username=login):
-                password1 = request.data['password1']
-                password2 = request.data['password2']
+            user_request = request.user
+            try:
+                # при попытке создать ребенка с аккаунта ребенка
+                # произойдет ошибка
 
-                if password1 == password2:
+                parent = Parent.objects.get(user=user_request)
 
-                    user = User.objects.create_user(username=login,
-                                                    password=password1)
-                    user.save()
+                login = request.data['name_child']
+                if not User.objects.filter(username=login):
+                    password1 = request.data['password1']
+                    password2 = request.data['password2']
 
-                    children = Children(user=user)
+                    if password1 == password2:
 
-                    children.save()
+                        user = User.objects.create_user(username=login,
+                                                        password=password1)
+                        user.save()
 
-                    Parent.objects.get(user = parent_user).child.add(children)
+                        children = Children(user=user)
 
-                    parent_user.save()
+                        children.save()
 
+                        parent.child.add(children)
 
-                    data['status'] = 'ok'
-                    data['data'] = {"code": 99}
+                        user_request.save()
 
+                        data['status'] = 'ok'
+                        data['data'] = {"code": 99}
+
+                    else:
+                        data["status"] = "error"
+                        data["data"] = {"code": 3}
                 else:
                     data["status"] = "error"
-                    data["data"] = {"code": 3}
-            else:
+                    data["data"] = {"code": 0}
+            except Parent.DoesNotExist:
                 data["status"] = "error"
-                data["data"] = {"code": 0}
+                data["data"] = {"code": 7}
 
         return Response(data)

@@ -14,7 +14,10 @@ def getWs(request):
     if request.is_websocket:
         try:
             for i in request.websocket:
-                checker.handler_socket(json.loads(i.decode('utf-8')),request)
+                try:
+                    checker.handler_socket(json.loads(i.decode('utf-8')),request)
+                except json.JSONDecodeError:
+                    pass
         except AttributeError:
             pass
         finally:
