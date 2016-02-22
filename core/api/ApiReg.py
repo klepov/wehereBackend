@@ -4,8 +4,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from idna import unicode
 from rest_framework import permissions
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -52,18 +53,19 @@ class Reg_api(APIView, permissions.BasePermission):
 
 
 
-class Add_child_api(APIView, permissions.BasePermission):
+class Add_child_api(APIView):
+
     def post(self, request):
 
 
         data = {}
-        if request.user.is_anonymous:
+        if request.user.is_anonymous():
 
             data["status"] = "error"
             data["data"] = {"code": 3}
 
         else:
-
+            parent_user = request.user
             login = request.data['name_child']
             if not User.objects.filter(username=login):
                 password1 = request.data['password1']
@@ -78,6 +80,11 @@ class Add_child_api(APIView, permissions.BasePermission):
                     children = Children(user=user)
 
                     children.save()
+
+                    Parent.objects.get(user = parent_user).child.add(children)
+
+                    parent_user.save()
+
 
                     data['status'] = 'ok'
                     data['data'] = {"code": 99}
