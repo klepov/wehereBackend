@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'whereiam/style.css' %}" />
+
+    <script type="text/javascript"
+    src="http://maps.google.com/maps/api/js?sensor=false">
+</script>
+
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+
+<script type="text/javascript">
+   function initialize(id_phone,lati,long) {
+    var position = new google.maps.LatLng(lati, long);
+    var myOptions = {
+      zoom: 16,
+      center: position,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    var map = new google.maps.Map(
+        document.getElementById(id_phone),
+        myOptions);
+    var marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title:"This is the place."
+    });
+    var contentString = id_phone+"";
+    var infowindow = new google.maps.InfoWindow({
+        content: contentString
+    });
+    google.maps.event.addListener(marker, 'click', function() {
+      infowindow.open(map,marker);
+    });
+  }
+</script>
+
+
+<script>
+setInterval(function() {
+    function Get(getUrl){
+    var Httpreq = new XMLHttpRequest(); // a new request
+    Httpreq.open("GET",getUrl,false);
+    Httpreq.send(null);
+    return Httpreq.responseText;
+    }
+    var json_obj = JSON.parse(Get("http://176.56.50.175:8080/whereiam/get/json/{{phone.id_phone}}/"));
+
+    var json_latitude = json_obj.latitude;
+    var json_longitude = json_obj.longitude;
+
+    initialize({{phone.id_phone}},json_latitude,json_longitude);
+        $('#lo').text("sss" + {{content.latitude}});
+        }, 10000);
+</script>
+
+<body onload="initialize({{phone.id_phone}},{{phone.latitude}},{{phone.longitude}})">
+<p id="lo">4</p>
+<p></p>
+<div class="full-screen"  id="{{phone.id_phone}}"></div>
+  <div id="amount"></div>
+</body>
+</html>
+<!--style="position: fixed; top: 0;left: 0;width: 100%; height: 100%"-->

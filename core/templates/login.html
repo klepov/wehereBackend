@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'whereiam/style.css' %}" />
+
+</head>
+<body>
+ <div class="login">
+<form action="." method="post">
+    {% csrf_token %}
+    <h2>Вход</h2>
+    {{ form.login }}
+    {{ form.password }}
+    <input class="animated" type="submit"  value="Войти" />
+    <a class='forgot' href='/whereiam/signup'>регистрация</a>
+</form>
+    </div>
+</body>
+</html>

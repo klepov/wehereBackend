@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>reg</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'whereiam/style.css' %}"/>
+
+</head>
+<body>
+<div class='login'>
+    <h2>Регистрация</h2>
+
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ form.login }}
+        {{ form.password1 }}
+        {{ form.password2 }}
+        <input class="animated" type="submit"  value="Зарегистрироваться">
+    </form>
+</div>
+</body>
+</html>
