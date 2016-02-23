@@ -197,6 +197,7 @@ class Check():
             "latitude": user.latitude,
             "longitude": user.longitude,
             "device_ID": user.device_ID,
+            "name": user.name,
             "IMEI": user.IMEI,
             "user": str(user)
         }

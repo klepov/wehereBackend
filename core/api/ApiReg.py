@@ -21,6 +21,7 @@ class RegApi(APIView, permissions.BasePermission):
             login = request.data['username']
             password1 = request.data['password1']
             password2 = request.data['password2']
+            name = request.data['name']
             # если пароль совпадает и юзера нет в бд то создать его
             if password1 == password2:
                 auth = authenticate(username=login, password=password1)
@@ -28,7 +29,7 @@ class RegApi(APIView, permissions.BasePermission):
                     user = User.objects.create_user(username=login,
                                                     password=password1)
                     user.save()
-                    p = Parent(user=user)
+                    p = Parent(user=user,name = name)
 
                     p.save()
 
@@ -71,24 +72,26 @@ class AddChildApi(APIView):
 
                 parent = Parent.objects.get(user=user_request)
 
-                login = request.data['name_child']
+                login = request.data['login_child']
                 if not User.objects.filter(username=login):
                     password1 = request.data['password1']
                     password2 = request.data['password2']
-
+                    name = request.data['name_child']
                     if password1 == password2:
 
                         user = User.objects.create_user(username=login,
                                                         password=password1)
                         user.save()
 
-                        children = Children(user=user)
+                        children = Children(user=user,name = name)
 
                         children.save()
 
                         parent.child.add(children)
 
                         user_request.save()
+
+                        token = Token.objects.create(user=user)
 
                         data['status'] = 'ok'
                         data['data'] = {"code": 99}
