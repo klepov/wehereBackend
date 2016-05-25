@@ -24,13 +24,12 @@ def get_list_relation(obj_some):
         common_people.extend(children)
 
     clear_self(common_people, obj_some)
-
-
     return common_people
 
 
 def clear_self(common_people, obj_some):
-    for i in range(len(common_people)):
+    len_common_people = len(common_people)
+    for i in range(len_common_people):
         if str(common_people[i]) == str(obj_some):
             common_people.pop(i)
 
@@ -38,16 +37,24 @@ def clear_self(common_people, obj_some):
 class Check():
     common_request = {}
 
+    def user_leave(self, websocket):
+        print("lol")
+        pass
+
     def handler_socket(self, json, request):
         """
         делегирует управление
         :param json:входящий json
         :param request: сокет - соединение
         """
+
+        # json = str(json_ss).replace("'",'"')
         print(json)
+
         method = json['method']
         print(method)
         if method == 'auth':
+
             self.__auth(json, request)
 
         elif method == 'update':
@@ -55,9 +62,9 @@ class Check():
 
             try:
                 if user is None or self.common_request[user] is None:
-                    request.websocket.send(self.__make_json_error("update",5))
+                    request.websocket.send(self.__make_json_error("update", 5))
             except:
-                request.websocket.send(self.__make_json_error("update",6))
+                request.websocket.send(self.__make_json_error("update", 6))
 
             self.__update(json)
 
@@ -68,10 +75,9 @@ class Check():
             if user is not None:
                 relation_list = self.__make_json_from_attribute_user(user)
             else:
-                request.websocket.send(self.__make_json_error("list_relation",6))
+                request.websocket.send(self.__make_json_error("list_relation", 6))
 
             return request.websocket.send(relation_list)
-
 
     def __auth(self, json_received, request):
 
@@ -86,12 +92,9 @@ class Check():
         if user is not None:
 
             self.common_request.update({user: request})
-            return request.websocket.send(self.__make_json_error("auth",77))
+            return request.websocket.send(self.__make_json_error("auth", 666))
         else:
-            request.websocket.send(self.__make_json_error("auth",6))
-
-
-
+            request.websocket.send(self.__make_json_error("auth", 6))
 
     def __return_username(self, json):
         """
@@ -101,7 +104,7 @@ class Check():
         """
         try:
             user = Token.objects.get(key=json['data']['token']).user
-        except User.DoesNotExist:
+        except:
             user = None
 
         return user
@@ -123,16 +126,16 @@ class Check():
                 obj_some = Children.objects.get(user=user)
 
             # парсинг джсона
-            IMEI, device_ID, latitude, longitude = self.__parse_JSON(json)
+            device_ID, latitude, longitude = self.__parse_JSON(json)
 
             # обновление данных для модели
-            self.__bind_user(IMEI, device_ID, latitude, longitude, obj_some)
+            self.__bind_user(device_ID, latitude, longitude, obj_some)
 
             obj_some.save()
 
             self.observer(obj_some)
 
-    def __bind_user(self, IMEI, device_ID, latitude, longitude, parent):
+    def __bind_user(self, device_ID, latitude, longitude, parent):
         """
         обновляет свойства у юзера
         :param IMEI:
@@ -144,7 +147,6 @@ class Check():
         parent.latitude = latitude
         parent.longitude = longitude
         parent.device_ID = device_ID
-        parent.IMEI = IMEI
 
     def __parse_JSON(self, json):
 
@@ -156,8 +158,7 @@ class Check():
         latitude = json['data']['latitude']
         longitude = json['data']['longitude']
         device_ID = json['data']['device_ID']
-        IMEI = json['data']['IMEI']
-        return IMEI, device_ID, latitude, longitude
+        return device_ID, latitude, longitude
 
     def observer(self, obj_some):
 
@@ -166,11 +167,12 @@ class Check():
         :param obj_some: юзер, который обновился
         """
         common_people = get_list_relation(obj_some)
-
+        print(common_people)
         for i in common_people:
 
             try:
                 request = self.common_request[i.user]
+
                 request.websocket.send(self.__encode_JSON(obj_some))
             except KeyError:
                 pass
@@ -198,7 +200,7 @@ class Check():
             "longitude": user.longitude,
             "device_ID": user.device_ID,
             "name": user.name,
-            "IMEI": user.IMEI,
+            "link_to_image": user.link_to_image,
             "user": str(user)
         }
         return data
@@ -217,12 +219,12 @@ class Check():
 
         data["method"] = "list_relation"
         data["data"] = relation
+
         return json.dumps(data).encode()
 
-
-    def __make_json_error(self,method,code):
+    def __make_json_error(self, method, code):
         json_model = {}
         json_model["method"] = method
-        json_model["data"] = {"code":code}
+        json_model["data"] = {"code": code}
 
         return json.dumps(json_model).encode()

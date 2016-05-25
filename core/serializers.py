@@ -8,13 +8,13 @@ class SnippetSerializerParent(serializers.ModelSerializer):
 
     class Meta:
         model = Parent
-        fields = ("IMEI", "device_ID", "latitude", "longitude")
+        fields = ("device_ID", "latitude", "longitude")
 
 class SnippetSerializerChildren(serializers.ModelSerializer):
 
     class Meta:
         model = Children
-        fields = ("IMEI", "device_ID", "latitude", "longitude")
+        fields = ("device_ID", "latitude", "longitude")
 
 
 
