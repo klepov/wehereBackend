@@ -28,10 +28,10 @@ def get_list_relation(obj_some):
 
 
 def clear_self(common_people, obj_some):
-    len_common_people = len(common_people)
-    for i in range(len_common_people):
-        if str(common_people[i]) == str(obj_some):
+    for i in range(len(common_people)):
+        if (common_people[i].user == obj_some):
             common_people.pop(i)
+            break
 
 
 class Check():
@@ -74,8 +74,11 @@ class Check():
 
             if user is not None:
                 relation_list = self.__make_json_from_attribute_user(user)
+                print("user ok")
+
             else:
                 request.websocket.send(self.__make_json_error("list_relation", 6))
+                print("user not")
 
             return request.websocket.send(relation_list)
 
