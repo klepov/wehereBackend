@@ -33,7 +33,6 @@ def clear_self(common_people, obj_some):
             common_people.pop(i)
             break
 
-
 class Check():
     common_request = {}
 
@@ -74,13 +73,11 @@ class Check():
 
             if user is not None:
                 relation_list = self.__make_json_from_attribute_user(user)
-                print("user ok")
+                return request.websocket.send(relation_list)
 
             else:
                 request.websocket.send(self.__make_json_error("list_relation", 6))
-                print("user not")
 
-            return request.websocket.send(relation_list)
 
     def __auth(self, json_received, request):
 
@@ -90,6 +87,7 @@ class Check():
         :param request: сокет - соединение
         :return: сообщение клиенту
         """
+        print(json_received)
         user = self.__return_username(json_received)
 
         if user is not None:
