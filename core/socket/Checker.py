@@ -33,6 +33,15 @@ def clear_self(common_people, obj_some):
             common_people.pop(i)
             break
 
+
+def get_specific_user(user):
+    try:
+        user_change = user.children
+    except Children.DoesNotExist:
+        user_change = user.parent
+    return user_change
+
+
 class Check():
     common_request = {}
 
@@ -72,12 +81,11 @@ class Check():
             user = self.__return_username(json)
 
             if user is not None:
-                relation_list = self.__make_json_from_attribute_user(user)
+                relation_list = self.__make_json_from_attribute_users(user)
                 return request.websocket.send(relation_list)
 
             else:
                 request.websocket.send(self.__make_json_error("list_relation", 6))
-
 
     def __auth(self, json_received, request):
 
@@ -91,9 +99,15 @@ class Check():
         user = self.__return_username(json_received)
 
         if user is not None:
-
             self.common_request.update({user: request})
-            return request.websocket.send(self.__make_json_error("auth", 666))
+            # self.__get_attribute_user(user)
+            json_response = (self.__make_json_from_attribute_user
+                             (self.__get_attribute_user
+                              (get_specific_user(user),1)
+                              )
+                             )
+
+            return request.websocket.send(json_response)
         else:
             request.websocket.send(self.__make_json_error("auth", 6))
 
@@ -190,13 +204,15 @@ class Check():
 
         return json.dumps(json_model).encode()
 
-    def __get_attribute_user(self, user):
+    def __get_attribute_user(self, user,root = 0):
         """
         выделяет свойства из юзера
         :param user:из которого нужно выделить свойство
         :return:словарь из значений юзера
         """
         data = {
+            "id": user.user.id,
+            "root": root,
             "latitude": user.latitude,
             "longitude": user.longitude,
             "device_ID": user.device_ID,
@@ -207,7 +223,7 @@ class Check():
         return data
 
     # ответ на запрос
-    def __make_json_from_attribute_user(self, users):
+    def __make_json_from_attribute_users(self, users):
         """
         создает json из атрибутов юзера
         :param users: список отношений юзера
@@ -227,5 +243,11 @@ class Check():
         json_model = {}
         json_model["method"] = method
         json_model["data"] = {"code": code}
-
         return json.dumps(json_model).encode()
+
+    def __make_json_from_attribute_user(self, user):
+        data = {}
+        data["method"] = "auth"
+        data["data"] = {"code": 666}
+        data["user"] = user
+        return json.dumps(data).encode()

@@ -14,7 +14,7 @@ class CommonData(models.Model):
 
     device_ID = models.CharField(max_length=30,blank=True)
 
-    latitude = models.FloatField(validators=[MinValueValidator(-90.00000000),
+    latitude  = models.FloatField(validators=[MinValueValidator(-90.00000000),
                                              MaxValueValidator(90.00000000)],null=True)
 
     longitude = models.FloatField(validators=[MinValueValidator(-180.00000000),
